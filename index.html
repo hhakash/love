@@ -1,1 +1,547 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Our Journey ❤️</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Caveat:wght@400;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --color-bg-start: #fff5f7; 
+            --color-bg-end: #ffe4e1;    
+            --color-primary: #1DB954;
+            --color-heart: #d63384;
+        }
+
+        body {
+            font-family: 'Playfair Display', serif;
+            background: linear-gradient(135deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%);
+            height: 100dvh; /* Dynamic viewport height for mobile browsers */
+            overflow: hidden;
+            margin: 0;
+            user-select: none;
+            position: relative;
+            touch-action: none; /* Prevents browser pull-to-refresh */
+        }
+
+        .bg-heart {
+            position: absolute;
+            color: rgba(214, 51, 132, 0.12);
+            pointer-events: none;
+            z-index: 0;
+            animation: float 15s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        .font-handwriting { font-family: 'Caveat', cursive; }
+        .font-sans-clean { font-family: 'Montserrat', sans-serif; }
+
+        .photocard {
+            width: 85vw;
+            max-width: 340px;
+            height: 520px;
+            background: white;
+            border-radius: 4px;
+            padding: 12px 12px 130px 12px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+            cursor: grab;
+            z-index: 10;
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: none; /* Shadow removed as requested */
+            will-change: transform, opacity;
+        }
+
+        @media (min-width: 768px) {
+            .photocard { height: 560px; max-width: 360px; }
+        }
+
+        .photo-area {
+            width: 100%;
+            height: 320px;
+            background: #fafafa;
+            position: relative;
+            overflow: visible;
+            border-radius: 2px;
+        }
+
+        .photo-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
+        .date-note {
+            position: absolute;
+            top: -10px;
+            right: 10px;
+            background: #fffbe6;
+            padding: 8px 12px 4px 12px;
+            font-family: 'Caveat', cursive;
+            font-size: 1.3rem;
+            color: #444;
+            transform: rotate(3deg);
+            z-index: 20;
+            border: 1px solid rgba(0,0,0,0.05);
+            pointer-events: none;
+        }
+
+        .date-note::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 10px;
+            background: #ff4d4d;
+            border-radius: 50%;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .card-caption {
+            margin-top: 15px;
+            width: 100%;
+            text-align: center;
+            font-family: 'Caveat', cursive;
+            font-size: 2rem;
+            color: #111;
+            line-height: 1;
+        }
+
+        /* Spotify Player Layout */
+        .spotify-player {
+            margin-top: 15px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 0 4px;
+        }
+
+        .spotify-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .spotify-info {
+            flex: 1;
+            overflow: hidden;
+            padding-right: 10px;
+        }
+
+        .spotify-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            color: #191414;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0;
+        }
+
+        .spotify-artist {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 10px;
+            color: #6a6a6a;
+            margin: 0;
+        }
+
+        .spotify-play-btn {
+            background: #1DB954;
+            color: white;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .spotify-progress-container {
+            width: 100%;
+            height: 4px;
+            background: #e5e5e5;
+            border-radius: 2px;
+            position: relative;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .spotify-progress-fill {
+            height: 100%;
+            background: #1DB954;
+            border-radius: 2px;
+            width: 0%;
+        }
+
+        .spotify-time {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #6a6a6a;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .hidden { display: none !important; }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .animate-heartbeat { animation: heartbeat 1.5s infinite ease-in-out; }
+
+        .btn-resp {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="bg-decorations"></div>
+
+    <div id="loading-screen" class="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#fff5f7] transition-opacity duration-700">
+        <div class="animate-heartbeat text-7xl mb-6">❤️</div>
+        <h1 class="text-3xl font-handwriting text-[#d63384]">Loading my love for you...</h1>
+    </div>
+
+    <div id="album-container" class="relative w-full h-full flex items-center justify-center">
+        <div id="card-stack" class="relative w-full h-full flex items-center justify-center">
+            <!-- Cards Injected Here -->
+        </div>
+    </div>
+
+    <div id="final-screen" class="fixed inset-0 hidden flex flex-col items-center justify-center text-center p-6 bg-white z-[150]">
+        <div class="max-w-md w-full">
+            <h2 class="text-4xl md:text-5xl font-serif text-gray-800 mb-16 tracking-tight">WILL YOU BE MY GIRLFRIEND?</h2>
+            
+            <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6 justify-center items-center">
+                <button onclick="handleResponse('yes')" class="btn-resp w-48 bg-[#d63384] text-white py-4 rounded-full text-xl font-serif hover:scale-105 active:scale-95 transition shadow-lg">YES</button>
+                <button id="no-btn" onmouseover="moveNo()" ontouchstart="moveNo()" onclick="moveNo()" class="btn-resp w-48 border-2 border-gray-200 text-gray-300 py-4 rounded-full text-xl font-serif transition">NO</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-player" preload="auto"></audio>
+
+    <script>
+        const cardsData = [
+            { id: 1, title: "Our First Hangout", date: "28-Nov", song: "The Night We Met", artist: "Lord Huron", img: "files/Our-First-Hangout.jpg", mp3: "files/Our-First-Hangout.mp3" },
+            { id: 2, title: "First Rickshaw Ride", date: "31-Oct", song: "Until I Found You", artist: "Stephen Sanchez", img: "files/First-Rickshaw-Ride.jpg", mp3: "files/First-Rickshaw-Ride.mp3" },
+            { id: 3, title: "First Proper Date?", date: "10-Nov", song: "Afreen Afreen", artist: "RFAK, Momina", img: "files/First-Proper-Date.jpg", mp3: "files/First-Proper-Date.mp3" },
+            { id: 4, title: "Charukola Dateee", date: "16-Nov", song: "Darale Duaarey", artist: "Nandita X Ishaan", img: "files/Charukola_Dateee.jpg", mp3: "files/Charukola_Dateee.mp3" },
+            { id: 5, title: "Postering with Poster Girl", date: "17-Nov", song: "Something About You", artist: "Eyedress", img: "files/Postering.jpg", mp3: "files/Postering.mp3" },
+            { id: 6, title: "Saviour of the Day", date: "19-Nov", song: "Wonderwall", artist: "Oasis", img: "files/Saviour.jpg", mp3: "files/Saviour.mp3" },
+            { id: 7, title: "A Colorful Night", date: "19-Nov", song: "Echo of Love", artist: "The Shutes", img: "files/Color.jpg", mp3: "files/Color.mp3" },
+            { id: 8, title: "A Date with Sunflower", date: "23-Nov", song: "Sunflower", artist: "Post Malone, Swae Lee", img: "files/Sunflower.jpg", mp3: "files/Sunflower.mp3" },
+            { id: 9, title: "Breaking the Matrix", date: "26-Nov", song: "Iraaday", artist: "Abdul Hannan & Rovalio", img: "files/Matrix.jpg", mp3: "files/Matrix.mp3" },
+            { id: 10, title: "Posh Date", date: "28-Nov", song: "60s Love", artist: "Level Five", img: "files/Posh.jpg", mp3: "files/Posh.mp3" },
+            { id: 11, title: "Stunningly Beautiful", date: "29-Nov", song: "Gulbahar", artist: "Ishaan, Shuvendu", img: "files/Beautiful.jpg", mp3: "files/Beautiful.mp3" },
+            { id: 12, title: "Her & Spidey", date: "1-Dec", song: "Blue", artist: "Yung Kai", img: "files/Spidey.jpg", mp3: "files/Spidey.mp3" },
+            { id: 13, title: "Winter Wondering", date: "4-Dec", song: "Snowman", artist: "Sia", img: "files/Winter.jpg", mp3: "files/Winter.mp3" },
+            { id: 14, title: "BBQ Night", date: "7-Dec", song: "Can't Help Falling in Love With You", artist: "Elvis Presley", img: "files/BBQ.jpg", mp3: "files/BBQ.mp3" },
+            { id: 15, title: "Heavenly Day", date: "9-Dec", song: "Heavenly", artist: "Cigarettes After Sex", img: "files/Heaven.jpg", mp3: "files/Heaven.mp3" },
+            { id: 16, title: "Sha-Pa Date", date: "11-Dec", song: "Amar Jaan", artist: "Dameer", img: "files/Jaan.jpg", mp3: "files/Jaan.mp3" },
+            { id: 17, title: "Kiss", date: "13-Dec", song: "Sailor Song", artist: "Gigi Perez", img: "files/Kiss.jpg", mp3: "files/Kiss.mp3" },
+            { id: 18, title: "Flowers from Flower", date: "17-Dec", song: "Ekanto Golap", artist: "Indalo", img: "files/Golap.jpg", mp3: "files/Golap.mp3" },
+            { id: 19, title: "Yapping Queen", date: "18-Dec", song: "My Love My All Mine", artist: "Mitski", img: "files/Yap.jpg", mp3: "files/Yap.mp3" },
+            { id: 20, title: "God's Greatest Artwork", date: "21-Dec", song: "Bright Blue Berlin Sky", artist: "The Shutes", img: "files/Art.jpg", mp3: "files/Art.mp3" },
+            { id: 21, title: "Surprise Attack", date: "23-Dec", song: "Jo Tum Mere Ho", artist: "Anuv Jain", img: "files/Mine.jpg", mp3: "files/Mine.mp3" },
+            { id: 22, title: "My Warmth", date: "29-Dec", song: "Snowman", artist: "Sia", img: "files/Snowman.jpg", mp3: "files/Snowman.mp3" },
+            { id: 23, title: "Bou", date: "4-Jan", song: "EVERYTHING", artist: "The Black Skirts", img: "files/Bou.jpg", mp3: "files/Bou.mp3" },
+            { id: 24, title: "Meeting her Fan", date: "5-Jan", song: "Luther", artist: "Kendrick Lamar", img: "files/Fan.jpg", mp3: "files/Fan.mp3" },
+            { id: 25, title: "My Bestie with My Love", date: "6-Jan", song: "DtMF", artist: "Bad Bunny", img: "files/Bestie.jpg", mp3: "files/Bestie.mp3" },
+            { id: 26, title: "A CoIncidental Date", date: "8-Jan", song: "Loverboy", artist: "A-Wall", img: "files/Coincidence.jpg", mp3: "files/Coincidence.mp3" },
+            { id: 27, title: "Silly Study Date", date: "11-Jan", song: "Roi", artist: "Videoclub", img: "files/Study.jpg", mp3: "files/Study.mp3" },
+            { id: 28, title: "British Cosplay", date: "13-Jan", song: "Die With A Smile", artist: "Lady Gaga, Bruno Mars", img: "files/British.jpg", mp3: "files/British.mp3" },
+            { id: 29, title: "The Best Grip", date: "15-Jan", song: "Take on Me", artist: "A-Ha", img: "files/Grip.jpg", mp3: "files/Grip.mp3" },
+            { id: 30, title: "Surprise Meet", date: "18-Jan", song: "No One Noticed", artist: "The Marinas", img: "files/Surprise.jpg", mp3: "files/Surprise.mp3" },
+            { id: 31, title: "Softies Date", date: "19-Jan", song: "I love you So", artist: "The Walters", img: "files/Softy.jpg", mp3: "files/Softy.mp3" },
+            { id: 32, title: "Date with Prettiest Girl", date: "20-Jan", song: "I think they call this Love", artist: "Elliot James Reay", img: "files/Dilnawaz.jpg", mp3: "files/Dilnawaz.mp3" },
+            { id: 33, title: "Exam Shenanigans", date: "22-Jan", song: "Honeypie", artist: "Jawny", img: "files/Exam.jpg", mp3: "files/Exam.mp3" },
+            { id: 34, title: "My Goddess", date: "23-Jan", song: "Tumi", artist: "Level Five", img: "files/Goddess.jpg", mp3: "files/Goddess.mp3" },
+            { id: 35, title: "Shopping Date", date: "26-Jan", song: "Blue", artist: "Yung Kai", img: "files/Shopping.jpg", mp3: "files/Shopping.mp3" },
+            { id: 36, title: "Kiss in the Dept", date: "28-Jan", song: "Apocalypse", artist: "Cigarettes After Sex", img: "files/Dept.jpg", mp3: "files/Dept.mp3" },
+            { id: 37, title: "Dolled up Baby", date: "30-Jan", song: "Pretty Little Baby", artist: "Connie Francis", img: "files/Doll.jpg", mp3: "files/Doll.mp3" },
+            { id: 38, title: "Night Out", date: "31-Jan", song: "This Town", artist: "Niall Horan", img: "files/Night.jpg", mp3: "files/Night.mp3" },
+            { id: 39, title: "Happy Valentines", date: "2-Feb", song: "Make You Mine", artist: "Public", img: "files/Valentines.jpg", mp3: "files/Valentines.mp3" },
+            { id: 40, title: "Peshawarain Date Night", date: "3-Feb", song: "Instant Crush", artist: "Daft Punk", img: "files/Peshawarain.jpg", mp3: "files/Peshawarain.mp3" },
+            { id: 41, title: "Traditional Princess", date: "5-Feb", song: "Telepatia", artist: "Kali Uchis", img: "files/BD.jpg", mp3: "files/BD.mp3" },
+            { id: 42, title: "Sorry", date: "6-Feb", song: "Line Without A Hook", artist: "Ricky Montgomery", img: "files/Sorry.jpg", mp3: "files/Sorry.mp3" },
+            { id: 43, title: "Through sickness and Love", date: "8-Feb", song: "All of the Stars", artist: "Hayd", img: "files/Sick.jpg", mp3: "files/Sick.mp3" },
+            { id: 44, title: "Longest Wait Ever", date: "15-Feb", song: "As It Was", artist: "Harry Styles", img: "files/Wait.jpg", mp3: "files/Wait.mp3" },
+            { id: 45, title: "The Day", date: "16-Feb", song: "Say Yes To Heaven", artist: "Lana Del Rey", img: "files/No-Pic.jpg", mp3: "files/Yes.mp3" }
+        ];
+
+        let currentIndex = 0;
+        const stack = document.getElementById('card-stack');
+        const audio = document.getElementById('audio-player');
+
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return "0:00";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function initDecorations() {
+            const container = document.getElementById('bg-decorations');
+            for(let i=0; i<15; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'bg-heart';
+                heart.innerHTML = i % 2 === 0 ? '❤️' : '✨';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.fontSize = (Math.random() * 20 + 12) + 'px';
+                heart.style.animationDelay = (Math.random() * 15) + 's';
+                heart.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                container.appendChild(heart);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            initDecorations();
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loading-screen').classList.add('hidden');
+                    initCards();
+                    playCurrentSong();
+                }, 700);
+            }, 3000);
+        });
+
+        audio.ontimeupdate = () => {
+            const progress = (audio.currentTime / audio.duration) * 100 || 0;
+            const currentCard = document.querySelector(`#card-${currentIndex}`);
+            if (currentCard) {
+                const fill = currentCard.querySelector('.spotify-progress-fill');
+                const timeLabel = currentCard.querySelector('.curr-time');
+                if (fill) fill.style.width = progress + '%';
+                if (timeLabel) timeLabel.innerText = formatTime(audio.currentTime);
+            }
+        };
+
+        audio.onloadedmetadata = () => {
+            const currentCard = document.querySelector(`#card-${currentIndex}`);
+            if (currentCard) {
+                const totalLabel = currentCard.querySelector('.total-time');
+                if (totalLabel) totalLabel.innerText = formatTime(audio.duration);
+            }
+        };
+
+        function togglePlayPause(e, btn) {
+            e.stopPropagation();
+            const playIcon = btn.querySelector('.play-icon');
+            const pauseIcon = btn.querySelector('.pause-icon');
+            
+            if (audio.paused) {
+                audio.play();
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+            } else {
+                audio.pause();
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+            }
+        }
+
+        function seekTo(e, container) {
+            e.stopPropagation(); 
+            const rect = container.getBoundingClientRect();
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const pos = (clientX - rect.left) / rect.width;
+            if (audio.duration) {
+                audio.currentTime = pos * audio.duration;
+            }
+        }
+
+        function initCards() {
+            cardsData.forEach((data, i) => {
+                const card = document.createElement('div');
+                card.className = 'photocard';
+                card.id = `card-${i}`;
+                card.style.zIndex = cardsData.length - i;
+                
+                const initialRot = (Math.random() - 0.5) * 4;
+                card.style.transform = `translate(-50%, -50%) rotate(${initialRot}deg)`;
+
+                card.innerHTML = `
+                    <div class="photo-area">
+                        <div class="date-note">${data.date}</div>
+                        <img src="${data.img}" alt="${data.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/400x600?text=❤️'">
+                    </div>
+                    <div class="card-caption">${data.title}</div>
+                    
+                    <div class="spotify-player">
+                        <div class="spotify-top">
+                            <div class="spotify-info">
+                                <h4 class="spotify-title">${data.song}</h4>
+                                <p class="spotify-artist">${data.artist}</p>
+                            </div>
+                            <div class="spotify-play-btn" onclick="togglePlayPause(event, this)">
+                                <svg class="play-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                                <svg class="pause-icon hidden" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                            </div>
+                        </div>
+                        <div class="spotify-progress-container" onclick="seekTo(event, this)" ontouchstart="seekTo(event, this)">
+                            <div class="spotify-progress-fill"></div>
+                        </div>
+                        <div class="spotify-time">
+                            <span class="curr-time">0:00</span>
+                            <span class="total-time">0:00</span>
+                        </div>
+                    </div>
+                `;
+
+                // Unified Touch/Mouse Drag Logic
+                let startX = 0;
+                let currentX = 0;
+                let isDragging = false;
+
+                const onStart = (e) => {
+                    if (i !== currentIndex) return;
+                    // Ignore drag if clicking interactive elements
+                    if (e.target.closest('.spotify-play-btn') || e.target.closest('.spotify-progress-container')) return;
+                    
+                    startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                    isDragging = true;
+                    card.style.transition = 'none';
+                };
+
+                const onMove = (e) => {
+                    if (!isDragging) return;
+                    currentX = (e.type.includes('touch') ? e.touches[0].clientX : e.clientX) - startX;
+                    
+                    // Constrain vertical movement for smoother feel
+                    const dragRot = initialRot + (currentX / 20);
+                    card.style.transform = `translate(calc(-50% + ${currentX}px), -50%) rotate(${dragRot}deg)`;
+                    card.style.opacity = Math.max(0.1, 1 - Math.abs(currentX) / (window.innerWidth * 0.8));
+                };
+
+                const onEnd = () => {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    card.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    
+                    const threshold = window.innerWidth * 0.25;
+                    if (Math.abs(currentX) > threshold) {
+                        const exitX = currentX > 0 ? window.innerWidth : -window.innerWidth;
+                        card.style.transform = `translate(${exitX}px, -50%) rotate(${currentX/5}deg)`;
+                        card.style.opacity = '0';
+                        setTimeout(() => {
+                            card.remove();
+                            currentIndex++;
+                            if (currentIndex < cardsData.length) {
+                                playCurrentSong();
+                            } else {
+                                showFinal();
+                            }
+                        }, 300);
+                    } else {
+                        card.style.transform = `translate(-50%, -50%) rotate(${initialRot}deg)`;
+                        card.style.opacity = '1';
+                    }
+                    currentX = 0;
+                };
+
+                card.addEventListener('mousedown', onStart);
+                card.addEventListener('touchstart', onStart, {passive: true});
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('touchmove', onMove, {passive: false});
+                window.addEventListener('mouseup', onEnd);
+                window.addEventListener('touchend', onEnd);
+
+                stack.appendChild(card);
+            });
+        }
+
+        function playCurrentSong() {
+            const data = cardsData[currentIndex];
+            audio.src = data.mp3;
+            audio.play().then(() => {
+                const btn = document.querySelector(`#card-${currentIndex} .spotify-play-btn`);
+                if (btn) {
+                    btn.querySelector('.play-icon').classList.add('hidden');
+                    btn.querySelector('.pause-icon').classList.remove('hidden');
+                }
+            }).catch(() => {
+                // Autoplay might be blocked, wait for user interaction
+            });
+        }
+
+        function showFinal() {
+            document.getElementById('album-container').classList.add('hidden');
+            document.getElementById('final-screen').classList.remove('hidden');
+            audio.src = "files/Yes.mp3";
+            audio.play().catch(() => {});
+        }
+
+        function moveNo() {
+            const btn = document.getElementById('no-btn');
+            const padding = 20;
+            // Get viewport dimensions
+            const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+            const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+            
+            const maxX = vw - btn.offsetWidth - padding;
+            const maxY = vh - btn.offsetHeight - padding;
+            
+            const randomX = Math.max(padding, Math.random() * maxX);
+            const randomY = Math.max(padding, Math.random() * maxY);
+            
+            btn.style.position = 'fixed';
+            btn.style.zIndex = '200';
+            btn.style.left = randomX + 'px';
+            btn.style.top = randomY + 'px';
+            btn.style.margin = '0';
+        }
+
+        function handleResponse(type) {
+            if (type === 'yes') {
+                confetti({
+                    particleCount: 200,
+                    spread: 80,
+                    origin: { y: 0.6 },
+                    colors: ['#d63384', '#ff85a1', '#ffffff']
+                });
+
+                document.body.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full text-center p-8 bg-[#fff5f7]">
+                        <h1 class="text-5xl md:text-7xl font-serif text-[#d63384] mb-8 tracking-tighter">IT'S OFFICIAL!</h1>
+                        <p class="font-handwriting text-3xl md:text-5xl text-gray-700 leading-tight">hha loves ppita and ppita loves hha</p>
+                        <div class="mt-12 text-pink-300 animate-pulse">❤️ Forever & Always ❤️</div>
+                    </div>
+                `;
+                
+                setInterval(() => {
+                    confetti({ particleCount: 40, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#d63384', '#ff85a1'] });
+                    confetti({ particleCount: 40, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#d63384', '#ff85a1'] });
+                }, 2500);
+            }
+        }
+    </script>
+</body>
+</html>
