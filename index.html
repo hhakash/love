@@ -137,7 +137,7 @@
         .seek-bar {
             -webkit-appearance: none;
             width: 100%;
-            height: 8px; /* Thicker */
+            height: 10px;
             background: #f0f0f0;
             border-radius: 10px;
             outline: none;
@@ -148,16 +148,16 @@
 
         .seek-bar::-webkit-slider-runnable-track {
             width: 100%;
-            height: 8px;
+            height: 10px;
             cursor: pointer;
             background: #eee;
-            border-radius: 4px;
+            border-radius: 5px;
         }
 
         .seek-bar::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 0; /* Hide default thumb to show fill color easily */
-            box-shadow: -407px 0 0 400px #d63384; /* Creates the progress fill effect */
+            width: 0;
+            box-shadow: -407px 0 0 400px #d63384; 
         }
 
         /* Heart Shape Play Button */
@@ -211,6 +211,22 @@
             50% { transform: scale(1.15); }
         }
         .pulse-heart { animation: pulse-heart 1.2s infinite ease-in-out; }
+
+        /* Swipe Instruction */
+        .swipe-hint {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #d63384;
+            opacity: 0.6;
+            pointer-events: none;
+            z-index: 50;
+        }
     </style>
 </head>
 <body>
@@ -234,6 +250,8 @@
         <div id="bg-decorations" class="fixed inset-0 overflow-hidden pointer-events-none"></div>
 
         <div id="card-container" class="relative w-full h-full flex items-center justify-center hidden opacity-0 transition-opacity duration-1000"></div>
+        
+        <div id="swipe-instruction" class="swipe-hint hidden">Swipe Left for Next • Right for Previous</div>
 
         <div id="final-screen" class="fixed inset-0 hidden flex flex-col items-center justify-center text-center p-8 bg-white z-[400]">
             <h2 class="text-4xl font-serif mb-12">WILL YOU BE MY GIRLFRIEND?</h2>
@@ -321,6 +339,7 @@
 
         function beginJourney() {
             document.getElementById('intro-loader').classList.add('hidden');
+            document.getElementById('swipe-instruction').classList.remove('hidden');
             container.classList.remove('hidden');
             setTimeout(() => { container.style.opacity = '1'; }, 50);
             renderCurrentStack();
@@ -329,8 +348,14 @@
 
         function renderCurrentStack() {
             container.innerHTML = '';
+            // Render 3 cards: previous (if exists), current, and next
+            // We only show the current card at the top, and next ones below it.
+            // If we want a swipe-back, we need to handle the state carefully.
+            
+            // To make "Swipe Back" work visually, we'll render current card and the one after it.
+            // When we swipe BACK, we decrement currentIndex and re-render.
             for (let i = currentIndex + 2; i >= currentIndex; i--) {
-                if (i < cardsData.length) createCard(cardsData[i], i);
+                if (i >= 0 && i < cardsData.length) createCard(cardsData[i], i);
             }
             playCurrentSong();
         }
@@ -339,7 +364,7 @@
             const card = document.createElement('div');
             card.className = 'photocard';
             card.id = `card-${index}`;
-            card.style.zIndex = 100 - index;
+            card.style.zIndex = 100 - (index - currentIndex);
             
             const rot = (index % 2 === 0 ? 1 : -1) * (Math.random() * 3);
             card.style.transform = `translate3d(-50%, -50%, 0) rotate(${rot}deg)`;
@@ -403,13 +428,29 @@
                 if (!isDragging) return;
                 isDragging = false;
                 card.style.transition = 'transform 0.4s ease-out';
-                if (Math.abs(curX) > 120) {
-                    card.style.transform = `translate3d(${curX > 0 ? 1000 : -1000}px, -50%, 0) rotate(${curX/10}deg)`;
+                
+                // SWIPE LEFT (NEXT)
+                if (curX < -120) {
+                    card.style.transform = `translate3d(-1000px, -50%, 0) rotate(-20deg)`;
                     setTimeout(() => {
                         currentIndex++;
                         currentIndex < cardsData.length ? renderCurrentStack() : showFinal();
                     }, 300);
-                } else {
+                } 
+                // SWIPE RIGHT (BACK)
+                else if (curX > 120) {
+                    if (currentIndex > 0) {
+                        card.style.transform = `translate3d(1000px, -50%, 0) rotate(20deg)`;
+                        setTimeout(() => {
+                            currentIndex--;
+                            renderCurrentStack();
+                        }, 300);
+                    } else {
+                        // Reset if no previous
+                        card.style.transform = `translate3d(-50%, -50%, 0) rotate(${rot}deg)`;
+                    }
+                }
+                else {
                     card.style.transform = `translate3d(-50%, -50%, 0) rotate(${rot}deg)`;
                 }
             };
@@ -455,6 +496,7 @@
 
         function showFinal() {
             container.classList.add('hidden');
+            document.getElementById('swipe-instruction').classList.add('hidden');
             document.getElementById('final-screen').classList.remove('hidden');
             audio.src = "files/Yes.mp3";
             audio.play().catch(() => {});
@@ -481,8 +523,9 @@
 
         function initDecorations() {
             const bg = document.getElementById('bg-decorations');
+            bg.innerHTML = '';
             const items = ['❤️', '✨', '🌸', '💖', '☁️'];
-            for(let i=0; i<25; i++) {
+            for(let i=0; i<30; i++) {
                 const el = document.createElement('div');
                 el.className = 'bg-element';
                 el.style.left = Math.random() * 100 + '%';
